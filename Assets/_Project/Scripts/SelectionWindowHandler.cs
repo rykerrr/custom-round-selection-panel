@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using DG.Tweening;
 
 namespace SelectionWindow
 {
@@ -10,8 +10,10 @@ namespace SelectionWindow
         [SerializeField] private RectTransform center = default;
         [SerializeField] private float radius = default;
         [SerializeField] private int scrollCtxDivVal = 120;
-        [SerializeField] private SelectionWindowElementOverview selWindow;
+        [SerializeField] private SelectionWindowElementOverview selWindow = default;
 
+        [SerializeField] private float tweenDur = 1f;
+        
         [SerializeField] private List<SelectionWindowElement> elements = default;
 
         private float angle = 0f;
@@ -19,6 +21,9 @@ namespace SelectionWindow
 
         private void Awake()
         {
+            DOTween.Init(null, true, LogBehaviour.Verbose);
+            DOTween.defaultAutoPlay = AutoPlay.AutoPlayTweeners;
+            
             if (elements == null || elements.Count == 0) return;
             
             SetElementsCircularlyAroundCenter();
@@ -28,12 +33,12 @@ namespace SelectionWindow
         {
             if (Keyboard.current.qKey.wasPressedThisFrame)
             {
-                ScrollBy(1);
+                SelectElement(curInd - 1);
             }
 
             if (Keyboard.current.eKey.wasPressedThisFrame)
             {
-                ScrollBy(-1);
+                SelectElement(curInd + 1);
             }
         }
 
@@ -57,34 +62,6 @@ namespace SelectionWindow
             }
         }
 
-        public void OnMouseScroll_ProcessScroll(InputAction.CallbackContext ctx)
-        {
-            if (ctx.canceled) return;
-            
-            var val = ctx.ReadValue<Vector2>().y;
-            var ind = Mathf.RoundToInt(val / 120);
-
-            ScrollBy(ind * -1);
-        }
-
-        private void SelectElement(int elemInd)
-        {
-            var newInd = curInd + elemInd;
-
-            if (newInd >= elements.Count)
-            {
-                newInd = elements.Count - newInd;
-            }
-            else if (newInd < 0)
-            {
-                newInd += elements.Count;
-            }
-
-            curInd = newInd;
-
-            selWindow.SelectElement(elements[curInd]);
-        }
-        
         private void ScrollBy(int indiceScrollAmn)
         {
             foreach (var elem in elements)
@@ -100,17 +77,42 @@ namespace SelectionWindow
                 var posAdd = new Vector2(x, y) * radius;
 
                 if(elem.Tracking) Debug.Log(x + " | " + y + " | " + posAdd);
-                
-                elemRectTransf.anchoredPosition = center.anchoredPosition + posAdd;
+
+                elemRectTransf.DOAnchorPos(center.anchoredPosition + posAdd, tweenDur, true);
+                // elemRectTransf.anchoredPosition = center.anchoredPosition + posAdd;
 
                 elem.TempAngle = elemAngle;
             }
-            
-            Debug.Log(curInd + " | " + (curInd + indiceScrollAmn));
-            SelectElement(indiceScrollAmn * -1);
-            Debug.Log(curInd);
         }
         
+        public void OnMouseScroll_ProcessScroll(InputAction.CallbackContext ctx)
+        {
+            if (ctx.canceled) return;
+            
+            var scrollValRaw = ctx.ReadValue<Vector2>().y;
+            var scrollValNormalized = Mathf.RoundToInt(scrollValRaw / scrollCtxDivVal);
+            
+            var newInd = curInd + scrollValNormalized * -1;
+            
+            SelectElement(newInd);
+        }
+
+        public void SelectElement(int newInd)
+        {
+            while (newInd < 0)
+            {
+                newInd += elements.Count;
+            }
+            
+            if (newInd >= elements.Count) newInd %= elements.Count;
+
+            ScrollBy(curInd - newInd); 
+            
+            curInd = newInd;
+
+            selWindow.SelectElement(elements[curInd]);
+        }
+
         public void Init(List<SelectionWindowElement> elements)
         {
             this.elements = elements;
