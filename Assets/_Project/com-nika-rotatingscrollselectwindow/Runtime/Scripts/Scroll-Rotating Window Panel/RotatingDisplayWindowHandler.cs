@@ -74,7 +74,7 @@ namespace SelectionWindow
                 var posAdd = new Vector2(x, y) * radius;
 
                 // if(elem.Tracking) Debug.Log(x + " | " + y + " | " + posAdd);
-
+                
                 elemRectTransf.DOAnchorPos(center.anchoredPosition + posAdd, tweenDur, true)
                     .SetEase(easeType);
                 // elemRectTransf.anchoredPosition = center.anchoredPosition + posAdd;
