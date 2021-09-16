@@ -518,7 +518,6 @@ GameObject:
   - component: {fileID: 1214692753}
   - component: {fileID: 1214692754}
   - component: {fileID: 1214692759}
-  - component: {fileID: 1214692755}
   - component: {fileID: 1214692756}
   - component: {fileID: 1214692757}
   - component: {fileID: 1214692758}
@@ -657,20 +656,6 @@ MonoBehaviour:
   easeType: 27
   tweenDur: 0.5
   elements: []
---- !u!114 &1214692755
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1214692751}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0a1f1d36bfbef914f848f999375bfaf3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  handler: {fileID: 1214692754}
-  elementContainer: {fileID: 1648779719}
 --- !u!114 &1214692756
 MonoBehaviour:
   m_ObjectHideFlags: 0
