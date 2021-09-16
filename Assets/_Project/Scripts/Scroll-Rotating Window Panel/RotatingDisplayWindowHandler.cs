@@ -5,13 +5,14 @@ using DG.Tweening;
 
 namespace SelectionWindow
 {
-    public class SelectionWindowHandler : MonoBehaviour
+    public class RotatingDisplayWindowHandler : MonoBehaviour
     {
         [SerializeField] private RectTransform center = default;
         [SerializeField] private float radius = default;
         [SerializeField] private int scrollCtxDivVal = 120;
-        [SerializeField] private SelectionWindowElementOverview selWindow = default;
+        [SerializeField] private RotatingWindowElementOverview selWindow = default;
 
+        [SerializeField] private Ease easeType = Ease.Linear;
         [SerializeField] private float tweenDur = 1f;
         
         [SerializeField] private List<SelectionWindowElement> elements = default;
@@ -23,10 +24,6 @@ namespace SelectionWindow
         {
             DOTween.Init(null, true, LogBehaviour.Verbose);
             DOTween.defaultAutoPlay = AutoPlay.AutoPlayTweeners;
-            
-            if (elements == null || elements.Count == 0) return;
-            
-            SetElementsCircularlyAroundCenter();
         }
 
         private void Update()
@@ -58,7 +55,7 @@ namespace SelectionWindow
 
                 elemRectTransf.anchoredPosition = center.anchoredPosition + posAdd;
 
-                elements[i].TempAngle = elemAngle;
+                elements[i].CurrentAngle = elemAngle;
             }
         }
 
@@ -68,23 +65,24 @@ namespace SelectionWindow
             {
                 var elemRectTransf = (RectTransform) elem.transform;
 
-                var elemAngle = elem.TempAngle + angle * indiceScrollAmn;
-                if(elem.Tracking) Debug.Log(elemAngle + " | " + angle + " | " + angle * indiceScrollAmn + " | " + elem.TempAngle);
+                var elemAngle = elem.CurrentAngle + angle * indiceScrollAmn;
+                // if(elem.Tracking) Debug.Log(elemAngle + " | " + angle + " | " + angle * indiceScrollAmn + " | " + elem.TempAngle);
                 
                 var x = Mathf.Cos(elemAngle * Mathf.Deg2Rad);
                 var y = Mathf.Sin(elemAngle * Mathf.Deg2Rad);
                 
                 var posAdd = new Vector2(x, y) * radius;
 
-                if(elem.Tracking) Debug.Log(x + " | " + y + " | " + posAdd);
+                // if(elem.Tracking) Debug.Log(x + " | " + y + " | " + posAdd);
 
-                elemRectTransf.DOAnchorPos(center.anchoredPosition + posAdd, tweenDur, true);
+                elemRectTransf.DOAnchorPos(center.anchoredPosition + posAdd, tweenDur, true)
+                    .SetEase(easeType);
                 // elemRectTransf.anchoredPosition = center.anchoredPosition + posAdd;
 
-                elem.TempAngle = elemAngle;
+                elem.CurrentAngle = elemAngle;
             }
         }
-        
+
         public void OnMouseScroll_ProcessScroll(InputAction.CallbackContext ctx)
         {
             if (ctx.canceled) return;
@@ -110,7 +108,7 @@ namespace SelectionWindow
             
             curInd = newInd;
 
-            selWindow.SelectElement(elements[curInd]);
+            selWindow.DisplayElement(elements[curInd]);
         }
 
         public void Init(List<SelectionWindowElement> elements)
